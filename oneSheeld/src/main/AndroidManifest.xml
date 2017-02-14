@@ -276,5 +276,12 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths"/>
         </provider>
+
+
+        <!-- This is the custom DNET3 Firebase Upload Service -->
+        <service
+            android:name=".services.FirebaseUploadService"
+            android:exported="false" />
+
     </application>
 </manifest>

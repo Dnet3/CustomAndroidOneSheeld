@@ -44,6 +44,10 @@ import android.widget.Toast;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
 import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 import com.integreight.onesheeld.appFragments.SheeldsList;
 import com.integreight.onesheeld.appFragments.ShieldsOperations;
 import com.integreight.onesheeld.enums.UIShield;
@@ -159,6 +163,24 @@ public class MainActivity extends FragmentActivity {
                     }
                 })
                 .monitor();
+
+        // Set the FirebaseAuth reference
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+
+        auth.signInWithEmailAndPassword("lammsite0@gmail.com", "abcd0852")
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        Log.d(MainActivity.class.getSimpleName(), "signInWithEmail:onComplete:" + task.isSuccessful());
+
+                        // If sign in fails, display a message to the user. If sign in succeeds
+                        // the auth state listener will be notified and logic to handle the
+                        // signed in user can be handled in the listener.
+                        if (!task.isSuccessful()) {
+                            Log.e(MainActivity.class.getSimpleName(), "signInWithEmail:failed", task.getException());
+                        }
+                    }
+                });
     }
 
     public Thread looperThread;
