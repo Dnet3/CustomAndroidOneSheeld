@@ -426,15 +426,15 @@ public class TwitterShield extends ControllerParent<TwitterShield> {
                         *  them to the FirebaseUploadService using an Intent*/
                         Log.i(TwitterShield.class.getSimpleName(), "onNewShieldFrameReceived() Upload photo method. imgPath = " + imgPath);
 
+                        // Get the application context in order to start an Android Service
                         Context appContext = getApplication().getApplicationContext();
 
-                        // Convert the latitude and longitude values from String to Float
+                        // Convert the latitude and longitude values from Strings to Floats
                         float latitude = Float.parseFloat(arduinoLat),
                                 longitude = Float.parseFloat(arduinoLong);
 
-                        // Get the current timestamp
-                        Long timestampLong = System.currentTimeMillis() / 1000;
-                        ArduinoHistoryObject arduinoHistoryEntry = new ArduinoHistoryObject(imgPath, latitude, longitude, Long.toString(timestampLong));
+                        // Create an Arduino location_history object
+                        ArduinoHistoryObject arduinoHistoryEntry = new ArduinoHistoryObject(imgPath, latitude, longitude);
 
                         appContext.startService(new Intent(appContext, FirebaseUploadService.class)
                                 .putExtra(FirebaseUploadService.EXTRA_ARDUINO_ID, arduinoID)

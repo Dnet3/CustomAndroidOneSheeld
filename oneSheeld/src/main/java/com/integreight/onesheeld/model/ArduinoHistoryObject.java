@@ -6,20 +6,21 @@ import android.os.Parcelable;
 /**
  * Created by Max on 14/2/17.
  *
- * An object for storing Arduino database history entries
+ * An object for storing Arduino database location_history entries
+ *
+ * Implements Parcelable so as to allow this custom object to be passed in
+ * an Android Intent.
  */
 
 public class ArduinoHistoryObject implements Parcelable {
 
     private String mImageStorageAddress;
     private Float mLatitude, mLongitude;
-    private String mTimeStamp;
 
-    public ArduinoHistoryObject(String imageStorageAddress, Float latitude, Float longitude, String timeStamp) {
+    public ArduinoHistoryObject(String imageStorageAddress, Float latitude, Float longitude) {
         mImageStorageAddress = imageStorageAddress;
         mLatitude = latitude;
         mLongitude = longitude;
-        mTimeStamp = timeStamp;
     }
 
     public String getImageStorageAddress() {
@@ -46,19 +47,10 @@ public class ArduinoHistoryObject implements Parcelable {
         mLongitude = longitude;
     }
 
-    public String getTimeStamp() {
-        return mTimeStamp;
-    }
-
-    public void setTimeStamp(String timeStamp) {
-        mTimeStamp = timeStamp;
-    }
-
     @Override
     public String toString() {
         return "ArduinoHistoryObject{" +
                 "mImageStorageAddress='" + mImageStorageAddress + '\'' +
-                ", mTimeStamp='" + mTimeStamp + '\'' +
                 ", mLatitude=" + mLatitude +
                 ", mLongitude=" + mLongitude +
                 '}';
@@ -74,14 +66,12 @@ public class ArduinoHistoryObject implements Parcelable {
         dest.writeString(this.mImageStorageAddress);
         dest.writeFloat(this.mLatitude);
         dest.writeFloat(this.mLongitude);
-        dest.writeString(this.mTimeStamp);
     }
 
     protected ArduinoHistoryObject(Parcel in) {
         this.mImageStorageAddress = in.readString();
         this.mLatitude = in.readFloat();
         this.mLongitude = in.readFloat();
-        this.mTimeStamp = in.readString();
     }
 
     public static final Creator<ArduinoHistoryObject> CREATOR = new Creator<ArduinoHistoryObject>() {

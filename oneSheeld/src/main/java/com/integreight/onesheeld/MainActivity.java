@@ -167,17 +167,17 @@ public class MainActivity extends FragmentActivity {
         // Set the FirebaseAuth reference
         FirebaseAuth auth = FirebaseAuth.getInstance();
 
+        // Sign in to Firebase Authentication using the LAMM site Gmail credentials
         auth.signInWithEmailAndPassword("lammsite0@gmail.com", "abcd0852")
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         Log.d(MainActivity.class.getSimpleName(), "signInWithEmail:onComplete:" + task.isSuccessful());
 
-                        // If sign in fails, display a message to the user. If sign in succeeds
-                        // the auth state listener will be notified and logic to handle the
-                        // signed in user can be handled in the listener.
                         if (!task.isSuccessful()) {
-                            Log.e(MainActivity.class.getSimpleName(), "signInWithEmail:failed", task.getException());
+                            // Show a toast to the user to inform them that authentication has failed
+                            Toast.makeText(MainActivity.this, "LAMM Secure: Account authentication failed.", Toast.LENGTH_LONG).show();
+                            Log.e(MainActivity.class.getSimpleName(), "FirebaseAuth.signInWithEmail:failed", task.getException());
                         }
                     }
                 });
