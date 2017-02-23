@@ -15,7 +15,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
 
-import com.integreight.onesheeld.model.ArduinoHistoryObject;
+import com.integreight.onesheeld.model.LAMMImageCaptureObject;
 import com.integreight.onesheeld.sdk.ShieldFrame;
 import com.integreight.onesheeld.R;
 import com.integreight.onesheeld.enums.UIShield;
@@ -67,10 +67,6 @@ public class TwitterShield extends ControllerParent<TwitterShield> {
     TwitterStream twitterStream;
     private List<String> trackedKeywords;
 
-    // A Firebase storage reference to the Arduino folder
-    //private StorageReference mArduinoStorageRef;
-
-
     public String getUsername() {
         return mSharedPreferences.getString(PREF_KEY_TWITTER_USERNAME, "");
     }
@@ -111,13 +107,6 @@ public class TwitterShield extends ControllerParent<TwitterShield> {
         thereIsAConnectionRequest = false;
         isTwitterStreamConnecting = false;
 //		if(isTwitterLoggedInAlready())initTwitterListening();
-
-
-
-        // Get a reference to Firebase Storage
-        //StorageReference storageRef = FirebaseStorage.getInstance().getReferenceFromUrl("gs://lammsite-fc813.appspot.com");
-        // Get a reference to Firebase Storage Arduino folder
-        //mArduinoStorageRef = storageRef.child("arduino");
         return super.init(tag);
     }
 
@@ -399,6 +388,12 @@ public class TwitterShield extends ControllerParent<TwitterShield> {
                                 arduinoLong = parts[2];
                         lastTweet = parts[3];
 
+
+
+
+
+
+
                         /* The following code block is existing 1Sheeld TwitterShield code
                         *  that is executed when the Arduino calls the function
                         *  TwitterShield.tweetLastPicture(String pictureText ,byte imageSource).
@@ -421,6 +416,10 @@ public class TwitterShield extends ControllerParent<TwitterShield> {
                                 eventHandler.onImageUploaded(lastTweet);
                         }*/
 
+
+
+
+
                         /* The rest of the code inside this if statement is custom. It gathers the phones
                         *  GPS co-ordinates and the photo that was just taken by the TwitterShield then sends
                         *  them to the FirebaseUploadService using an Intent*/
@@ -429,41 +428,18 @@ public class TwitterShield extends ControllerParent<TwitterShield> {
                         // Get the application context in order to start an Android Service
                         Context appContext = getApplication().getApplicationContext();
 
-                        // Convert the latitude and longitude values from Strings to Floats
-                        float latitude = Float.parseFloat(arduinoLat),
-                                longitude = Float.parseFloat(arduinoLong);
+                        // Get the current timestamp
+                        Long timestampLong = System.currentTimeMillis() / 1000;
 
                         // Create an Arduino location_history object
-                        ArduinoHistoryObject arduinoHistoryEntry = new ArduinoHistoryObject(imgPath, latitude, longitude);
+                        LAMMImageCaptureObject arduinoHistoryEntry = new LAMMImageCaptureObject(imgPath, arduinoLat, arduinoLong, String.valueOf(timestampLong));
 
+                        // Start the FirebaseUploadService and add the Arduino ID
+                        // and the location_history object to the starting Intent
                         appContext.startService(new Intent(appContext, FirebaseUploadService.class)
                                 .putExtra(FirebaseUploadService.EXTRA_ARDUINO_ID, arduinoID)
-                                .putExtra(FirebaseUploadService.EXTRA_ARDUINO_HISTORY_ENTRY, arduinoHistoryEntry)
-                                .setAction(FirebaseUploadService.ACTION_UPLOAD));
-
-                        //Uri imageUri = Uri.fromFile(new File(imgPath));
-                        //StorageReference lastImageRef = mArduinoStorageRef.child(arduinoID + "/" + imageUri.getLastPathSegment());
-
-                        //UploadTask uploadTask = lastImageRef.putFile(imageUri);
-
-                        // Register observers to listen for when the download is done or if it fails
-                        /*uploadTask.addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception exception) {
-                                // Handle unsuccessful uploads
-                                Log.e(OnFailureListener.class.getSimpleName(), "UploadTask.OnFailureListener.onFailure() exception = " + exception);
-                            }
-                        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                            @Override
-                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-
-                                // Upload phone info to Firebase Database
-                                Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                            }
-                        });*/
-
-
+                                .putExtra(FirebaseUploadService.EXTRA_ARDUINO_IMAGE_CAPTURE, arduinoHistoryEntry)
+                                .setAction(FirebaseUploadService.ACTION_UPLOAD_IMAGE_CAPTURE));
 
                     } else if (frame.getFunctionId() == UPDATE_SEND_MESSAGE_METHOD_ID) {
                         String userHandle = frame.getArgumentAsString(0);

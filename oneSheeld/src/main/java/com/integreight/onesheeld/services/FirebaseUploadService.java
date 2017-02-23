@@ -18,7 +18,9 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.integreight.onesheeld.model.ArduinoHistoryObject;
+import com.integreight.onesheeld.model.LAMMImageCaptureObject;
+import com.integreight.onesheeld.model.LAMMJourneyObject;
+import com.integreight.onesheeld.model.LAMMJourneyPointObject;
 
 import java.io.File;
 
@@ -34,16 +36,18 @@ import java.io.File;
 public class FirebaseUploadService extends Service {
 
     /** Intent Actions **/
-    public static final String ACTION_UPLOAD = "action_upload";
+    public static final String ACTION_UPLOAD_IMAGE_CAPTURE = "action_upload_image_capture",
+            ACTION_UPLOAD_JOURNEY_POINT = "action_upload_journey_point";
 
     /** Intent Extras **/
     public static final String EXTRA_ARDUINO_ID = "extra_arduino_id",
-            EXTRA_ARDUINO_HISTORY_ENTRY = "extra_arduino_hsitory_entry";
+            EXTRA_ARDUINO_IMAGE_CAPTURE = "extra_arduino_image_capture",
+            EXTRA_ARDUINO_JOURNEY = "extra_arduino_journey";
 
     // A variable to hold a reference to the arduino folder in Firebase Storage
     private StorageReference mArduinoStorageRef;
     // A variable to hold a reference to the arduino section of the Firebase Database
-    private DatabaseReference mArduinoDatabaseRef;
+    private DatabaseReference mDatabaseRef;
     // A variable to track the number of upload tasks
     private int mNumTasks = 0;
 
@@ -58,9 +62,7 @@ public class FirebaseUploadService extends Service {
         mArduinoStorageRef = storageRef.child("arduinos");
 
         // Get a reference to Firebase Database
-        DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReferenceFromUrl("https://lammsite-fc813.firebaseio.com");
-        // Get a reference to the Arduinos table
-        mArduinoDatabaseRef = databaseRef.child("arduinos");
+        mDatabaseRef = FirebaseDatabase.getInstance().getReferenceFromUrl("https://lammsite-fc813.firebaseio.com");
     }
 
     @Nullable
@@ -74,28 +76,34 @@ public class FirebaseUploadService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(FirebaseUploadService.class.getSimpleName(), "onStartCommand:" + intent + ":" + startId);
         // If the Intent action is set to ACTION_UPLOAD
-        if (intent.getAction().equals(ACTION_UPLOAD)) {
-            // Retrieve the Arduino ID and the location_history object from the Intent
+        if (intent.getAction().equals(ACTION_UPLOAD_IMAGE_CAPTURE)) {
+            // Retrieve the Arduino ID and the image_capture object from the Intent
             String arduinoID = intent.getStringExtra(EXTRA_ARDUINO_ID);
-            ArduinoHistoryObject arduinoHistoryEntry = intent.getParcelableExtra(EXTRA_ARDUINO_HISTORY_ENTRY);
+            LAMMImageCaptureObject arduinoImageCapture = intent.getParcelableExtra(EXTRA_ARDUINO_IMAGE_CAPTURE);
             // Pass retrieved objects to the upload method
-            upload(arduinoID, arduinoHistoryEntry);
+            uploadImage(arduinoID, arduinoImageCapture);
         }
-
+        else if (intent.getAction().equals(ACTION_UPLOAD_JOURNEY_POINT)) {
+            // Retrieve the Arduino ID and the journey point object from the Intent
+            String arduinoID = intent.getStringExtra(EXTRA_ARDUINO_ID);
+            LAMMJourneyObject arduinoJourney = intent.getParcelableExtra(EXTRA_ARDUINO_JOURNEY);
+            // Pass retrieved objects to the upload method
+            uploadJourney(arduinoID, arduinoJourney);
+        }
         return START_REDELIVER_INTENT;
     }
 
     // Custom method for uploading a photo to Firebase Storage then creating a Firebase Database entry
-    private void upload(final String arduinoID, final ArduinoHistoryObject arduinoHistoryEntry) {
+    private void uploadImage(final String arduinoID, final LAMMImageCaptureObject arduinoImageCapture) {
 
         // Track that the upload task has started
         taskStarted();
 
-        Log.d(FirebaseUploadService.class.getSimpleName(), "uploadFromUri:src:" + arduinoHistoryEntry.getImageStorageAddress());
+        Log.d(FirebaseUploadService.class.getSimpleName(), "uploadFromUri:src:" + arduinoImageCapture.getImageStorageAddress());
         Log.d(FirebaseUploadService.class.getSimpleName(), "uploadFromUri: Photo upload begin:" + 0 + "%");
 
         // Get the full Uri to the image file
-        final Uri imageUri = Uri.fromFile(new File(arduinoHistoryEntry.getImageStorageAddress()));
+        final Uri imageUri = Uri.fromFile(new File(arduinoImageCapture.getImageStorageAddress()));
         // Get a reference to store the file at gs://lammsite-fc813.appspot.com/arduino/<ARDUINO_ID>/<FILENAME>.jpg
         final StorageReference imageRef = mArduinoStorageRef.child(arduinoID).child(imageUri.getLastPathSegment());
 
@@ -133,26 +141,15 @@ public class FirebaseUploadService extends Service {
                                 // Upload phone info to Firebase Database
                                 Uri downloadUri = taskSnapshot.getMetadata().getDownloadUrl();
                                 Log.d(FirebaseUploadService.class.getSimpleName(), "uploadFromUri:onSuccess: Photo upload complete. Download uri = " + downloadUri);
-
                                 // Change the image storage address from the device folder to the web host address
-                                arduinoHistoryEntry.setImageStorageAddress(downloadUri.toString());
-                                // Get the current timestamp
-                                Long timestampLong = System.currentTimeMillis() / 1000;
-                                // Get a reference to this arduino device in the database and then the location_history branch
-                                DatabaseReference locationHistoryDatabaseRef = mArduinoDatabaseRef.child(arduinoID).child("location_history");
-                                // Create a new location_history entry using the timestamp as an identifier
-                                locationHistoryDatabaseRef.child(String.valueOf(timestampLong)).setValue(arduinoHistoryEntry);
+                                arduinoImageCapture.setImageStorageAddress(downloadUri.toString());
 
+                                // Get a reference to this arduino device in the image_captures database and then the images branch
+                                DatabaseReference imagesDatabaseRef = mDatabaseRef.child("image_captures").child(arduinoID);
+                                // Create a new image_captures entry
+                                imagesDatabaseRef.push().setValue(arduinoImageCapture);
                                 // Show a toast to the user to inform them that this entry has been saved to the website
-                                Toast.makeText(FirebaseUploadService.this, "LAMM Secure: Upload complete", Toast.LENGTH_LONG).show();
-
-                                // Query the Arduino database for the entries with an ID equal to the arduinoID
-                                /*int id = Integer.parseInt(arduinoID);
-                                Query query = mArduinoDatabaseRef.orderByChild("id").equalTo(id);
-                                DatabaseReference arduinoIDDatabaseRef = query.getRef();
-                                DatabaseReference historyDatabaseRef = arduinoIDDatabaseRef.child("history");
-                                // Add an entry to that specific Arduino history
-                                historyDatabaseRef.push().setValue(arduinoHistoryEntry);*/
+                                Toast.makeText(FirebaseUploadService.this, "LAMM Secure: Image upload complete", Toast.LENGTH_LONG).show();
                             }
                             else {
                                 Log.e(FirebaseUploadService.class.getSimpleName(), "uploadFromUri:onSuccess: Photo upload complete. Download uri was NULL ");
@@ -172,6 +169,19 @@ public class FirebaseUploadService extends Service {
                         taskCompleted();
                     }
                 });
+    }
+
+    private void uploadJourney(final String arduinoID, final LAMMJourneyObject arduinoJourney) {
+
+        // Track that the upload task has started
+        taskStarted();
+
+        // Get a reference to this arduino device in the image_captures database and then the images branch
+        DatabaseReference journeyDatabaseRef = mDatabaseRef.child("journeys").child(arduinoID);
+        // Create a new journeys entry
+        journeyDatabaseRef.push().setValue(arduinoJourney);
+        // Show a toast to the user to inform them that this entry has been saved to the website
+        Toast.makeText(FirebaseUploadService.this, "LAMM Secure: Journey upload complete", Toast.LENGTH_LONG).show();
     }
 
     // Method for increasing the number of tasks
