@@ -6,20 +6,23 @@ import android.os.Parcelable;
 /**
  * Created by Max on 14/2/17.
  *
- * An object for storing Arduino database history entries
+ * An object for storing Arduino database images entries
+ *
+ * Implements Parcelable so as to allow this custom object to be passed in
+ * an Android Intent.
  */
 
-public class ArduinoHistoryObject implements Parcelable {
+public class LAMMImageCaptureObject implements Parcelable {
 
-    private String mImageStorageAddress;
-    private Float mLatitude, mLongitude;
-    private String mTimeStamp;
+    private String mImageStorageAddress, mLatitude, mLongitude, mTimeStamp;
 
-    public ArduinoHistoryObject(String imageStorageAddress, Float latitude, Float longitude, String timeStamp) {
+    public LAMMImageCaptureObject() {}
+
+    public LAMMImageCaptureObject(String imageStorageAddress, String latitude, String longitude, String timestamp) {
         mImageStorageAddress = imageStorageAddress;
         mLatitude = latitude;
         mLongitude = longitude;
-        mTimeStamp = timeStamp;
+        mTimeStamp = timestamp;
     }
 
     public String getImageStorageAddress() {
@@ -30,19 +33,19 @@ public class ArduinoHistoryObject implements Parcelable {
         mImageStorageAddress = imageStorageAddress;
     }
 
-    public Float getLatitude() {
+    public String getLatitude() {
         return mLatitude;
     }
 
-    public void setLatitude(Float latitude) {
+    public void setLatitude(String latitude) {
         mLatitude = latitude;
     }
 
-    public Float getLongitude() {
+    public String getLongitude() {
         return mLongitude;
     }
 
-    public void setLongitude(Float longitude) {
+    public void setLongitude(String longitude) {
         mLongitude = longitude;
     }
 
@@ -56,11 +59,11 @@ public class ArduinoHistoryObject implements Parcelable {
 
     @Override
     public String toString() {
-        return "ArduinoHistoryObject{" +
+        return "LAMMImageCaptureObject{" +
                 "mImageStorageAddress='" + mImageStorageAddress + '\'' +
-                ", mTimeStamp='" + mTimeStamp + '\'' +
                 ", mLatitude=" + mLatitude +
                 ", mLongitude=" + mLongitude +
+                ", mTimestamp=" + mTimeStamp +
                 '}';
     }
 
@@ -72,25 +75,25 @@ public class ArduinoHistoryObject implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int i) {
         dest.writeString(this.mImageStorageAddress);
-        dest.writeFloat(this.mLatitude);
-        dest.writeFloat(this.mLongitude);
+        dest.writeString(this.mLatitude);
+        dest.writeString(this.mLongitude);
         dest.writeString(this.mTimeStamp);
     }
 
-    protected ArduinoHistoryObject(Parcel in) {
+    protected LAMMImageCaptureObject(Parcel in) {
         this.mImageStorageAddress = in.readString();
-        this.mLatitude = in.readFloat();
-        this.mLongitude = in.readFloat();
+        this.mLatitude = in.readString();
+        this.mLongitude = in.readString();
         this.mTimeStamp = in.readString();
     }
 
-    public static final Creator<ArduinoHistoryObject> CREATOR = new Creator<ArduinoHistoryObject>() {
-        public ArduinoHistoryObject createFromParcel(Parcel source) {
-            return new ArduinoHistoryObject(source);
+    public static final Creator<LAMMImageCaptureObject> CREATOR = new Creator<LAMMImageCaptureObject>() {
+        public LAMMImageCaptureObject createFromParcel(Parcel source) {
+            return new LAMMImageCaptureObject(source);
         }
 
-        public ArduinoHistoryObject[] newArray(int size) {
-            return new ArduinoHistoryObject[size];
+        public LAMMImageCaptureObject[] newArray(int size) {
+            return new LAMMImageCaptureObject[size];
         }
     };
 }
