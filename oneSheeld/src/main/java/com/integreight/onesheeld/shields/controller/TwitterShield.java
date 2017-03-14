@@ -383,25 +383,15 @@ public class TwitterShield extends ControllerParent<TwitterShield> {
                         // Split the received string the retrieve the Arduino ID
                         String tweetArg = frame.getArgumentAsString(0);
                         String[] parts = tweetArg.split(";;;");
-                        String arduinoID = parts[0],
-                                arduinoLat = parts[1],
-                                arduinoLong = parts[2];
-                        lastTweet = parts[3];
 
-
-
-
-
-
-
-                        /* The following code block is existing 1Sheeld TwitterShield code
+                        /* The following code block is 1Sheeld TwitterShield code
                         *  that is executed when the Arduino calls the function
                         *  TwitterShield.tweetLastPicture(String pictureText ,byte imageSource).
                         *
                         *  tweetLastPicture() subsequently calls the function
                         *  OneSheeld.sendShieldFrame(byte shieldID, byte instanceID, byte functionID, byte argNo, FunctionArg ** arguments)
                         *  with the byte UPLOAD_PHOTO_METHOD_ID (0x03) as the functionID parameter.*/
-                        //lastTweet = frame.getArgumentAsString(0);
+
                         byte sourceFolderId = frame.getArgument(1)[0];
                         String imgPath = null;
                         if (sourceFolderId == CameraUtils.FROM_ONESHEELD_FOLDER)
@@ -410,37 +400,43 @@ public class TwitterShield extends ControllerParent<TwitterShield> {
                         else if (sourceFolderId == CameraUtils.FROM_CAMERA_FOLDER)
                             imgPath = CameraUtils
                                     .getLastCapturedImagePathFromCameraFolder(activity);
-                        /*if (imgPath != null) {
-                            uploadPhoto(imgPath, lastTweet);
-                            if (eventHandler != null)
-                                eventHandler.onImageUploaded(lastTweet);
-                        }*/
 
+                        if (parts[0].equals("0")) {
+                            //lastTweet = frame.getArgumentAsString(0);
+                            lastTweet = frame.getArgumentAsString(1);
 
+                            if (imgPath != null) {
+                                uploadPhoto(imgPath, lastTweet);
+                                if (eventHandler != null)
+                                    eventHandler.onImageUploaded(lastTweet);
+                            }
+                        }
+                        else if (parts[0].equals("1")) {
+                            String arduinoID = parts[1],
+                                    arduinoLat = parts[2],
+                                    arduinoLong = parts[3];
 
-
-
-                        /* The rest of the code inside this if statement is custom. It gathers the phones
+                        /* The code inside this if statement is custom. It gathers the phones
                         *  GPS co-ordinates and the photo that was just taken by the TwitterShield then sends
                         *  them to the FirebaseUploadService using an Intent*/
-                        Log.i(TwitterShield.class.getSimpleName(), "onNewShieldFrameReceived() Upload photo method. imgPath = " + imgPath);
+                            Log.i(TwitterShield.class.getSimpleName(), "onNewShieldFrameReceived() Upload photo method. imgPath = " + imgPath);
 
-                        // Get the application context in order to start an Android Service
-                        Context appContext = getApplication().getApplicationContext();
+                            // Get the application context in order to start an Android Service
+                            Context appContext = getApplication().getApplicationContext();
 
-                        // Get the current timestamp
-                        Long timestampLong = System.currentTimeMillis() / 1000;
+                            // Get the current timestamp
+                            Long timestampLong = System.currentTimeMillis() / 1000;
 
-                        // Create an Arduino location_history object
-                        LAMMImageCaptureObject arduinoHistoryEntry = new LAMMImageCaptureObject(imgPath, arduinoLat, arduinoLong, String.valueOf(timestampLong));
+                            // Create an Arduino location_history object
+                            LAMMImageCaptureObject arduinoHistoryEntry = new LAMMImageCaptureObject(imgPath, arduinoLat, arduinoLong, String.valueOf(timestampLong));
 
-                        // Start the FirebaseUploadService and add the Arduino ID
-                        // and the location_history object to the starting Intent
-                        appContext.startService(new Intent(appContext, FirebaseUploadService.class)
-                                .putExtra(FirebaseUploadService.EXTRA_ARDUINO_ID, arduinoID)
-                                .putExtra(FirebaseUploadService.EXTRA_ARDUINO_IMAGE_CAPTURE, arduinoHistoryEntry)
-                                .setAction(FirebaseUploadService.ACTION_UPLOAD_IMAGE_CAPTURE));
-
+                            // Start the FirebaseUploadService and add the Arduino ID
+                            // and the location_history object to the starting Intent
+                            appContext.startService(new Intent(appContext, FirebaseUploadService.class)
+                                    .putExtra(FirebaseUploadService.EXTRA_ARDUINO_ID, arduinoID)
+                                    .putExtra(FirebaseUploadService.EXTRA_ARDUINO_IMAGE_CAPTURE, arduinoHistoryEntry)
+                                    .setAction(FirebaseUploadService.ACTION_UPLOAD_IMAGE_CAPTURE));
+                        }
                     } else if (frame.getFunctionId() == UPDATE_SEND_MESSAGE_METHOD_ID) {
                         String userHandle = frame.getArgumentAsString(0);
                         String msg = frame.getArgumentAsString(1);
