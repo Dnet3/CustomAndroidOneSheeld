@@ -25,6 +25,8 @@
     <color name="terminal_encoding_default_color">#4D4D4D</color>
     <!-- Lock Pattern-->
 
+    <color name="dnet_teal">#009688</color>
+
     <attr name="color_lock_pattern_view_regular" format="reference" />
     <attr name="color_lock_pattern_view_success" format="reference" />
     <attr name="color_lock_pattern_view_error" format="reference" />
