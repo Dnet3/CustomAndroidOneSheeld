@@ -44,10 +44,6 @@ import android.widget.Toast;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
 import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
 import com.integreight.onesheeld.appFragments.SheeldsList;
 import com.integreight.onesheeld.appFragments.ShieldsOperations;
 import com.integreight.onesheeld.enums.UIShield;
@@ -163,24 +159,6 @@ public class MainActivity extends FragmentActivity {
                     }
                 })
                 .monitor();
-
-        // Set the FirebaseAuth reference
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-
-        // Sign in to Firebase Authentication using the LAMM site Gmail credentials
-        auth.signInWithEmailAndPassword("lammsite0@gmail.com", "abcd0852")
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        Log.d(MainActivity.class.getSimpleName(), "signInWithEmail:onComplete:" + task.isSuccessful());
-
-                        if (!task.isSuccessful()) {
-                            // Show a toast to the user to inform them that authentication has failed
-                            Toast.makeText(MainActivity.this, "LAMM Secure: Account authentication failed.", Toast.LENGTH_LONG).show();
-                            Log.e(MainActivity.class.getSimpleName(), "FirebaseAuth.signInWithEmail:failed", task.getException());
-                        }
-                    }
-                });
     }
 
     public Thread looperThread;
@@ -700,7 +678,7 @@ public class MainActivity extends FragmentActivity {
                 ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
                 List<RunningAppProcessInfo> appProcesses = activityManager
                         .getRunningAppProcesses();
-                if(appProcesses!=null) {
+                if (appProcesses != null) {
                     String apps = "";
                     for (int i = 0; i < appProcesses.size(); i++) {
                         Log.d("Executed app", "Application executed : "
@@ -782,10 +760,9 @@ public class MainActivity extends FragmentActivity {
 
     @Override
     protected void onNewIntent(final Intent intent) {
-        if (intent!=null && intent.getStringExtra("url")!=null && intent.getStringExtra("url").length()>0){
+        if (intent != null && intent.getStringExtra("url") != null && intent.getStringExtra("url").length() > 0) {
             handleNotificationWithUrlIntent(intent);
-        }
-        else if (getThisApplication().getRunningShields().get(UIShield.NFC_SHIELD.name()) != null) {
+        } else if (getThisApplication().getRunningShields().get(UIShield.NFC_SHIELD.name()) != null) {
             if (findViewById(R.id.progressShieldInit) != null && getSupportFragmentManager().findFragmentByTag(ShieldsOperations.class.getName()) == null) {
                 findViewById(R.id.progressShieldInit)
                         .setVisibility(View.VISIBLE);
