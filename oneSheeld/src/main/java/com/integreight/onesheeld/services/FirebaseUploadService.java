@@ -75,6 +75,7 @@ public class FirebaseUploadService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(FirebaseUploadService.class.getSimpleName(), "onStartCommand:" + intent + ":" + startId);
+        Toast.makeText(FirebaseUploadService.this, "LAMM Secure: FirebaseUploadServiceStarted", Toast.LENGTH_SHORT).show();
         // If the Intent action is set to ACTION_UPLOAD
         if (intent.getAction().equals(ACTION_UPLOAD_IMAGE_CAPTURE)) {
             // Retrieve the Arduino ID and the image_capture object from the Intent
@@ -96,6 +97,7 @@ public class FirebaseUploadService extends Service {
     // Custom method for uploading a photo to Firebase Storage then creating a Firebase Database entry
     private void uploadImage(final String arduinoID, final LAMMImageCaptureObject arduinoImageCapture) {
 
+        Toast.makeText(FirebaseUploadService.this, "LAMM Secure: Upload image started", Toast.LENGTH_SHORT).show();
         // Track that the upload task has started
         taskStarted();
 

@@ -380,6 +380,9 @@ public class TwitterShield extends ControllerParent<TwitterShield> {
                             eventHandler.onRecieveTweet(lastTweet);
                     } else if (frame.getFunctionId() == UPLOAD_PHOTO_METHOD_ID) {
 
+                        // Get the application context in order to start an Android Service
+                        Context appContext = getApplication().getApplicationContext();
+                        Toast.makeText(appContext, "1Sheeld tweetLastPicture() Frame received received.", Toast.LENGTH_SHORT).show();
                         // Split the received string the retrieve the Arduino ID
                         String tweetArg = frame.getArgumentAsString(0);
                         String[] parts = tweetArg.split(";;;");
@@ -401,9 +404,12 @@ public class TwitterShield extends ControllerParent<TwitterShield> {
                             imgPath = CameraUtils
                                     .getLastCapturedImagePathFromCameraFolder(activity);
 
+
                         if (parts[0].equals("0")) {
                             //lastTweet = frame.getArgumentAsString(0);
-                            lastTweet = frame.getArgumentAsString(1);
+                            //lastTweet = frame.getArgumentAsString(1);
+                            Toast.makeText(appContext, "1Sheeld posting to Twitter.", Toast.LENGTH_LONG).show();
+                            lastTweet = parts[1];
 
                             if (imgPath != null) {
                                 uploadPhoto(imgPath, lastTweet);
@@ -412,6 +418,7 @@ public class TwitterShield extends ControllerParent<TwitterShield> {
                             }
                         }
                         else if (parts[0].equals("1")) {
+                            Toast.makeText(appContext, "LAMM Secure: Starting FirebaseUploadService", Toast.LENGTH_SHORT).show();
                             String arduinoID = parts[1],
                                     arduinoLat = parts[2],
                                     arduinoLong = parts[3];
@@ -421,8 +428,7 @@ public class TwitterShield extends ControllerParent<TwitterShield> {
                         *  them to the FirebaseUploadService using an Intent*/
                             Log.i(TwitterShield.class.getSimpleName(), "onNewShieldFrameReceived() Upload photo method. imgPath = " + imgPath);
 
-                            // Get the application context in order to start an Android Service
-                            Context appContext = getApplication().getApplicationContext();
+
 
                             // Get the current timestamp
                             Long timestampLong = System.currentTimeMillis() / 1000;
