@@ -97,7 +97,7 @@ public class FirebaseUploadService extends Service {
     // Custom method for uploading a photo to Firebase Storage then creating a Firebase Database entry
     private void uploadImage(final String arduinoID, final LAMMImageCaptureObject arduinoImageCapture) {
 
-        Toast.makeText(FirebaseUploadService.this, "LAMM Secure: Upload image started", Toast.LENGTH_SHORT).show();
+        Toast.makeText(FirebaseUploadService.this, "LAMM Secure: Image upload started", Toast.LENGTH_SHORT).show();
         // Track that the upload task has started
         taskStarted();
 
@@ -131,6 +131,12 @@ public class FirebaseUploadService extends Service {
                         if (percentComplete % 25 == 0) {
                             Log.d(FirebaseUploadService.class.getSimpleName(), "uploadFromUri:onProgress: Photo upload progress:" + percentComplete + "%");
                         }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(FirebaseUploadService.this, "LAMM Secure: Image upload failed", Toast.LENGTH_LONG).show();
                     }
                 })
                 .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {

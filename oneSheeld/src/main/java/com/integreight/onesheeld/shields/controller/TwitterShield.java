@@ -382,7 +382,7 @@ public class TwitterShield extends ControllerParent<TwitterShield> {
 
                         // Get the application context in order to start an Android Service
                         Context appContext = getApplication().getApplicationContext();
-                        Toast.makeText(appContext, "1Sheeld tweetLastPicture() Frame received received.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(appContext, "1Sheeld tweetLastPicture() Frame received.", Toast.LENGTH_SHORT).show();
                         // Split the received string the retrieve the Arduino ID
                         String tweetArg = frame.getArgumentAsString(0);
                         String[] parts = tweetArg.split(";;;");

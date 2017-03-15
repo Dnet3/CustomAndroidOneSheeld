@@ -44,6 +44,14 @@ import android.widget.Toast;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
 import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.EmailAuthProvider;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.integreight.onesheeld.appFragments.SheeldsList;
 import com.integreight.onesheeld.appFragments.ShieldsOperations;
 import com.integreight.onesheeld.enums.UIShield;
@@ -55,6 +63,7 @@ import com.integreight.onesheeld.sdk.FirmwareVersion;
 import com.integreight.onesheeld.sdk.OneSheeldDevice;
 import com.integreight.onesheeld.sdk.OneSheeldSdk;
 import com.integreight.onesheeld.sdk.OneSheeldVersionQueryCallback;
+import com.integreight.onesheeld.services.FirebaseUploadService;
 import com.integreight.onesheeld.services.OneSheeldService;
 import com.integreight.onesheeld.shields.controller.CameraShield;
 import com.integreight.onesheeld.shields.controller.ColorDetectionShield;
@@ -87,6 +96,9 @@ public class MainActivity extends FragmentActivity {
     public boolean isForground = false;
     private boolean isBackPressed = false;
     TextView oneSheeldLogo;
+
+    private FirebaseAuth mAuth;
+    private FirebaseAuth.AuthStateListener mAuthListener;
 
     private CopyOnWriteArrayList<OnSlidingMenueChangeListner> onChangeSlidingLockListeners = new CopyOnWriteArrayList<>();
 
@@ -159,6 +171,49 @@ public class MainActivity extends FragmentActivity {
                     }
                 })
                 .monitor();
+
+        // Set the FirebaseAuth reference
+        mAuth = FirebaseAuth.getInstance();
+
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user != null) {
+                    // User is signed in
+                    Log.d(MainActivity.class.getSimpleName(), "onAuthStateChanged:signed_in:" + user.getUid());
+                    Toast.makeText(MainActivity.this, "LAMM Secure: User " + user.getUid() + " authenticated with Firebase.", Toast.LENGTH_SHORT).show();
+                } else {
+                    // User is signed out
+                    Log.d(MainActivity.class.getSimpleName(), "onAuthStateChanged:signed_out");
+                    Toast.makeText(MainActivity.this, "LAMM Secure: No Firebase user found.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        };
+
+        AuthCredential credential = EmailAuthProvider.getCredential("lammsecure2@gmail.com", "Password.123");
+
+        // Sign in to Firebase Authentication using the LAMM site Gmail credentials
+        mAuth.signInWithCredential(credential)
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(MainActivity.this, "LAMM Secure: lammsecure2@gmail.com: sign in exception.", Toast.LENGTH_SHORT).show();
+                        Log.d(MainActivity.class.getSimpleName(), "signInWithCredential:onFailure:" + e.toString());
+                    }
+                })
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        Log.d(MainActivity.class.getSimpleName(), "signInWithCredential:onComplete:" + task.isSuccessful());
+
+                        if (!task.isSuccessful()) {
+                            // Show a toast to the user to inform them that authentication has failed
+                            Toast.makeText(MainActivity.this, "LAMM Secure: lammsecure2@gmail.com: authentication failed.", Toast.LENGTH_LONG).show();
+                            Log.e(MainActivity.class.getSimpleName(), "FirebaseAuth.signInWithEmail:failed", task.getException());
+                        }
+                    }
+                });
     }
 
     public Thread looperThread;
@@ -751,11 +806,15 @@ public class MainActivity extends FragmentActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        mAuth.addAuthStateListener(mAuthListener);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        if (mAuthListener != null) {
+            mAuth.removeAuthStateListener(mAuthListener);
+        }
     }
 
     @Override
