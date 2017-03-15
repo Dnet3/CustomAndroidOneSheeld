@@ -14,7 +14,7 @@ import android.os.Parcelable;
 
 public class LAMMImageCaptureObject implements Parcelable {
 
-    private String mImageStorageAddress, mLatitude, mLongitude, mTimeStamp;
+    private String mImageStorageAddress, mLatitude, mLongitude, mTimestamp;
 
     public LAMMImageCaptureObject() {}
 
@@ -22,7 +22,7 @@ public class LAMMImageCaptureObject implements Parcelable {
         mImageStorageAddress = imageStorageAddress;
         mLatitude = latitude;
         mLongitude = longitude;
-        mTimeStamp = timestamp;
+        mTimestamp = timestamp;
     }
 
     public String getImageStorageAddress() {
@@ -49,12 +49,12 @@ public class LAMMImageCaptureObject implements Parcelable {
         mLongitude = longitude;
     }
 
-    public String getTimeStamp() {
-        return mTimeStamp;
+    public String getTimestamp() {
+        return mTimestamp;
     }
 
-    public void setTimeStamp(String timeStamp) {
-        mTimeStamp = timeStamp;
+    public void setTimestamp(String timestamp) {
+        mTimestamp = timestamp;
     }
 
     @Override
@@ -63,7 +63,7 @@ public class LAMMImageCaptureObject implements Parcelable {
                 "mImageStorageAddress='" + mImageStorageAddress + '\'' +
                 ", mLatitude=" + mLatitude +
                 ", mLongitude=" + mLongitude +
-                ", mTimestamp=" + mTimeStamp +
+                ", mTimestamp=" + mTimestamp +
                 '}';
     }
 
@@ -77,14 +77,14 @@ public class LAMMImageCaptureObject implements Parcelable {
         dest.writeString(this.mImageStorageAddress);
         dest.writeString(this.mLatitude);
         dest.writeString(this.mLongitude);
-        dest.writeString(this.mTimeStamp);
+        dest.writeString(this.mTimestamp);
     }
 
     protected LAMMImageCaptureObject(Parcel in) {
         this.mImageStorageAddress = in.readString();
         this.mLatitude = in.readString();
         this.mLongitude = in.readString();
-        this.mTimeStamp = in.readString();
+        this.mTimestamp = in.readString();
     }
 
     public static final Creator<LAMMImageCaptureObject> CREATOR = new Creator<LAMMImageCaptureObject>() {
